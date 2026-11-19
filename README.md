@@ -2,7 +2,8 @@
 
 Kaggle competition (RSNA 2026): from a multi-series knee MRI (DICOM), predict 12 findings (ACL, MCL, medial/lateral
 meniscus, medial/lateral/patellofemoral OA, effusion, synovitis, Baker's cyst, contusion, fracture).
-Metric: macro ROC-AUC. Code competition: <= 9 h, no internet, T4 GPU.
+
+Metric: macro ROC-AUC. Code competition : <= 9 h, no internet, T4 GPU.
 
 **Result:** team of two, **134th / 6,425 on the private leaderboard (top 2.1 %) — silver medal**.
 This repo contains the part I built alone: the ViT pipeline and the label extraction. My teammate's CNN branch,
