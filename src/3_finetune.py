@@ -41,9 +41,9 @@ PRE_SLICES = 16
 PRE_IMG = 336
 MAX_SERIES = 14
 N_CAT = 10                  # 9 known categories + OTHER
-N_USE = 6                   # K=6 series jointly attended per training step (was 4 in the 12/16 run)
+N_USE = 6                   # series attended jointly per training step
 N_SLICE = 16                # slices in the pool = what eval/inference sees (dense pass)
-N_TRAIN = 12                # RAND-12: slices drawn at random (no replacement) per series per step (was 8, 1 per pair)
+N_TRAIN = 12                # slices drawn at random (no replacement) per series per step
 IMG = 224
 TOKEN_DIM = 768
 
@@ -56,8 +56,8 @@ LLRD = 1.0
 HIGH_BLOCKS = 6
 LOW_FACTOR = 0.5
 TOPK_AVG = 3
-READ_THREADS = 4            # v2 I/O fix: background readers
-AHEAD = 6                   # v2 I/O fix: batches read ahead of the GPU (same as the SSL scripts)
+READ_THREADS = 4            # background reader threads
+AHEAD = 6                   # batches read ahead of the GPU
 LR_HEAD_WARM = 1e-3
 LR_HEAD = 1e-3
 WEIGHT_DECAY = 0.02

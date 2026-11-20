@@ -1,17 +1,16 @@
 """
-Prepare paste-ready batches for MANUAL Opus 5 label re-extraction via claude.ai
-(Claude Pro), for when there is no API budget.
+Prepare paste-ready batches for manual label extraction through a chat interface
+(alternative to extract_labels_api.py when there is no API budget).
 
-Same two-layer design as extract_labels_opus.py: the model returns a discrete
-STATE per finding; opus_manual_collect.py maps states -> soft probabilities.
+Same two-layer design: the model returns a discrete state per finding and
+collect_responses.py maps states to soft probabilities.
 
-Each batch file is a SELF-CONTAINED message: the full instructions + N reports,
-each tagged with its StudyInstanceUID. Paste one batch file into a fresh (or
-reused) claude.ai conversation, copy the model's reply into
-data/labels/opus5/responses/batch_<NNN>.txt, move to the next. Order does not
-matter; you can stop and resume across days.
+Each batch file is a self-contained message: the full instructions plus N reports, each tagged with its
+StudyInstanceUID. Paste one batch into a conversation, save the reply as
+data/labels/opus5/responses/batch_<NNN>.txt, then move to the next. Order does not matter and the
+process can be resumed later.
 
-    python kaggle/nlp/opus_manual_prep.py [BATCH_SIZE]      # default 50
+    python prep_batches.py [BATCH_SIZE]      # default 50
 
 Output:
     data/labels/opus5/batches/batch_001.txt ... batch_NNN.txt   <- paste these
@@ -25,7 +24,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from extract_labels_opus import SYSTEM, TARGETS   # reuse the crafted prompt + finding list
+from extract_labels_api import SYSTEM, TARGETS
 
 ROOT = Path(__file__).resolve().parents[2]
 TRAIN_CSV = ROOT / "data/raw/train.csv"
@@ -88,9 +87,9 @@ def main():
     print(f"~{approx_in:,} input tokens/batch (rules + reports), ~{BATCH_SIZE * 120:,} output")
     print(f"manifest: {BATCH_DIR/'_manifest.csv'}")
     print(f"\nworkflow per batch:")
-    print(f"  1. open claude.ai, paste the contents of batches/batch_NNN.txt")
+    print(f"  1. open the chat interface, paste the contents of batches/batch_NNN.txt")
     print(f"  2. save the reply to responses/batch_NNN.txt (raw, as-is)")
-    print(f"  3. python kaggle/nlp/opus_manual_collect.py   # shows progress + builds the CSVs")
+    print(f"  3. python collect_responses.py   # shows progress + builds the CSVs")
 
 
 if __name__ == "__main__":

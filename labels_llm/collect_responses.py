@@ -1,9 +1,9 @@
 """
-Collect the manual Opus 5 batch replies (data/labels/opus5/responses/batch_*.txt)
+Collect the manual batch replies (data/labels/opus5/responses/batch_*.txt)
 into the two label tables, and report progress. Safe to run repeatedly as you
 add replies over several days.
 
-    python kaggle/nlp/opus_manual_collect.py
+    python collect_responses.py
 
 Output (rebuilt each run from whatever replies exist):
     data/labels/opus5/llm_states_opus5.csv    uid + 12 state strings
@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from extract_labels_opus import STATES, TARGETS, state_to_prob
+from extract_labels_api import STATES, TARGETS, state_to_prob
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "data/labels/opus5"
@@ -62,7 +62,7 @@ def _norm_state(finding: str, state) -> str:
 
 def main():
     if not MANIFEST.exists():
-        raise SystemExit(f"no manifest at {MANIFEST} — run opus_manual_prep.py first")
+        raise SystemExit(f"no manifest at {MANIFEST} — run prep_batches.py first")
     man = pd.read_csv(MANIFEST, dtype=str)
     all_uids = list(man["StudyInstanceUID"])
     uid_set = set(all_uids)
@@ -121,7 +121,7 @@ def main():
                 aucs = [roc_auc_score(y[:, j], pp[:, j]) if len(set(y[:, j])) > 1 else np.nan
                         for j in range(12)]
                 print(f"\nvs {len(ids)} gold  macro-AUC {np.nanmean(aucs):.4f}   "
-                      f"(v4 blend 0.887 | rule 0.796 | wguesdon Opus5 ~0.823)")
+                      f"(rule-based baseline: 0.796)")
                 for t, a in zip(TARGETS, aucs):
                     print(f"  {t:18s} {a:.3f}")
         except Exception as e:

@@ -1,29 +1,21 @@
 """
-LLM label re-extraction with Claude Opus 5 (Message Batches API).
+Extract soft labels from the radiology reports with an LLM (Anthropic Message Batches API).
 
-Two-layer design (per wguesdon's measured result): the model outputs a discrete
-STATE per finding from a fixed vocabulary; a deterministic Python layer maps each
-state to a soft probability. Asking the model for a calibrated number directly is
-asking it to do something it is bad at; asking it to pick from a closed set is not.
+The model does not output probabilities. For each finding it picks a discrete state from a closed vocabulary
+(see PROMPT.md), and a deterministic mapping in this file turns each state into a soft probability.
+Reports are read in their original language (no translation step): rule-based extraction lost a lot of recall
+on non-English reports.
 
-The gap the rule extractor leaves is NON-ENGLISH RECALL (rule 0.674 vs LLM 0.833
-on non-English reports). So the prompt tells the model to read in the original
-language and never translate first.
+The gold annotators read the images and treat borderline wording ("possible", "cannot exclude", "mild") as
+negative, so hedged findings map to `equivocal` or lower, never to a confident positive.
 
-The competition gold is a radiologist reading the IMAGES, and on-the-fence cases
-("possible", "cannot exclude", "mild") are marked NEGATIVE. So a hedge maps to
-`equivocal` or lower, never to a confident positive -- this is exactly the
-"v4 over-calls positives" failure we measured.
-
-Usage
+Usage:
   pip install anthropic pandas scikit-learn
-  export ANTHROPIC_API_KEY=sk-ant-...              # console.anthropic.com key + credits
-  python extract_labels_opus.py submit             # creates the batch, prints the id
-  python extract_labels_opus.py collect <batch_id> # once it has ended (<= 24h, usually <1h)
+  export ANTHROPIC_API_KEY=...
+  python extract_labels_api.py submit              # creates the batch, prints its id
+  python extract_labels_api.py collect <batch_id>  # once the batch has ended
 
-Cost (Batch API = 50% off, effort=low): roughly $30-40 for 4407 reports.
-
-On Kaggle instead: a non-competition notebook, internet ON, key in a Kaggle Secret.
+Without API budget, prep_batches.py / collect_responses.py do the same thing by hand through the chat interface.
 """
 from __future__ import annotations
 
@@ -248,7 +240,7 @@ def collect(batch_id: str):
         aucs = [roc_auc_score(y[:, j], p[:, j]) if len(set(y[:, j])) > 1 else np.nan
                 for j in range(12)]
         print(f"\nvs 58 gold  macro-AUC {np.nanmean(aucs):.4f}   "
-              f"(v4 blend 0.887, rule 0.796, wguesdon Opus5 ~0.823)")
+              f"(rule-based baseline: 0.796)")
         for t, a in zip(TARGETS, aucs):
             print(f"  {t:18s} {a:.3f}")
     except Exception as e:
